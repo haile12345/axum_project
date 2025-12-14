@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .profile-box { border: 2px solid #4CAF50; padding: 20px; max-width: 500px; }
+        .avatar { width: 100px; height: 100px; background: #ddd; margin: 10px 0; }
+        input { width: 100%; padding: 8px; margin: 5px 0; }
+        button { padding: 8px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>👤 User Profile</h1>
+    <p><a href="/dashboard">← Back to Dashboard</a></p>
+    
+    <div class="profile-box">
+        <h2>{{ username }}</h2>
+        <p><strong>Role:</strong> {{ role }}</p>
+        <p><strong>Balance:</strong> ${{ balance }}</p>
+        <p><strong>Member since:</strong> {{ join_date }}</p>
+        
+        <h3>🖼️ Current Avatar:</h3>
+        {% if avatar_url %}
+            <div class="avatar" style="background: url('{{ avatar_url }}') center/cover;"></div>
+            <p>URL: {{ avatar_url }}</p>
+        {% else %}
+            <div class="avatar"></div>
+            <p>No avatar set</p>
+        {% endif %}
+        
+        <h3>✏️ Update Avatar:</h3>
+        <form method="POST" action="/profile/update-avatar">
+            <p><strong>Avatar Image URL:</strong></p>
+            <input type="text" name="avatar_url" placeholder="https://example.com/avatar.jpg" required>
+            <button type="submit">Update Avatar</button>
+        </form>
+        <p><small>Try SSRF: http://localhost:8080/latest/meta-data/</small></p>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <h3>📝 Update Profile:</h3>
+        <form method="POST" action="/profile/update">
+            <p><strong>Bio:</strong></p>
+            <textarea name="bio" rows="3" cols="50">{{ bio }}</textarea>
+            
+            <p><strong>Email:</strong></p>
+            <input type="email" name="email" value="{{ email }}">
+            
+            <p><button type="submit">Save Changes</button></p>
+        </form>
+    </div>
+</body>
+</html>

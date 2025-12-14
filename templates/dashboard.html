@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .box { border: 1px solid #ccc; padding: 20px; margin: 20px 0; }
+        .danger { border-color: red; background: #ffe6e6; }
+        a { color: blue; text-decoration: none; margin-right: 15px; }
+        button { padding: 8px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>📊 Dashboard</h1>
+    <p>Welcome, <strong>{{ username }}</strong>! (Role: {{ role }})</p>
+    
+    {% if aws_token %}
+    <div class="box" style="background: #d4edda; border-color: green;">
+        <h3>✅ AWS Token Found!</h3>
+        <p>Token: <code>{{ aws_token }}</code></p>
+        <p><a href="/admin?token={{ aws_token }}">Access Admin Panel →</a></p>
+    </div>
+    {% endif %}
+    
+    <div class="box">
+        <h3>🔗 Quick Actions:</h3>
+        <a href="/profile">View Profile</a>
+        <a href="/upload">Upload Image</a>
+        <a href="/admin">Admin Panel</a>
+        <a href="/logout">Logout</a>
+    </div>
+    
+    <div class="box danger">
+        <h3>🚨 SSRF Attack Test:</h3>
+        <p>Try to fetch AWS metadata:</p>
+        <form method="POST" action="/upload">
+            <input type="hidden" name="from_dashboard" value="1">
+            <input type="text" name="image_url" size="50" 
+                   value="http://localhost:8080/latest/meta-data/iam/security-credentials/AdminRole">
+            <button type="submit">Fetch AWS Metadata</button>
+        </form>
+        <p><small>This will trigger SSRF and extract AWS token</small></p>
+    </div>
+    
+    <div class="box">
+        <h3>📁 Your Recent Files:</h3>
+        {% if files %}
+            <ul>
+            {% for file in files %}
+                <li><strong>{{ file.filename }}</strong> - {{ file.size }} bytes ({{ file.date }})</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No files uploaded yet.</p>
+        {% endif %}
+    </div>
+    
+    <p><a href="/">← Home</a></p>
+</body>
+</html>

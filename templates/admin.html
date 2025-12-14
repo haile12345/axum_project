@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .granted { background: #d4edda; border: 2px solid green; padding: 20px; }
+        .denied { background: #f8d7da; border: 2px solid red; padding: 20px; }
+        pre { background: #f8f9fa; padding: 15px; overflow: auto; }
+    </style>
+</head>
+<body>
+    {% if access_granted %}
+    <div class="granted">
+        <h1>✅ ADMIN ACCESS GRANTED</h1>
+        <p><strong>AWS Token:</strong> <code>{{ token }}</code></p>
+        <p><strong>Impact:</strong> Full system compromise via SSRF → AWS metadata theft</p>
+    </div>
+    
+    <h2>📊 System Information</h2>
+    <p><strong>Total Users:</strong> {{ user_count }}</p>
+    <p><strong>Total Files:</strong> {{ total_files }}</p>
+    
+    <h3>👥 All Users:</h3>
+    <pre>{{ users_json }}</pre>
+    
+    <h3>📝 Recent Activity:</h3>
+    <pre>{{ logs_json }}</pre>
+    
+    {% else %}
+    <div class="denied">
+        <h1>❌ ADMIN ACCESS DENIED</h1>
+        <p>Valid AWS IAM token required.</p>
+        
+        <form method="GET" action="/admin">
+            <p><strong>Enter AWS Token:</strong></p>
+            <input type="text" name="token" size="40" placeholder="AWS_TOKEN_EXTRACTED">
+            <button type="submit">Access Admin</button>
+        </form>
+        
+        <h3>🎯 How to Get Token:</h3>
+        <ol>
+            <li>Go to <a href="/upload">Upload page</a></li>
+            <li>Use URL: <code>http://localhost:8080/latest/meta-data/iam/security-credentials/AdminRole</code></li>
+            <li>Submit form (triggers SSRF)</li>
+            <li>Token will be extracted automatically</li>
+            <li>Come back here with the token</li>
+        </ol>
+        
+        {% if token %}
+            <p style="color: orange;">⚠️ Invalid token: {{ token }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <p><a href="/">← Home</a> | <a href="/dashboard">Dashboard</a></p>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSRF Demo - Home</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .box { border: 1px solid #ccc; padding: 20px; margin: 20px 0; }
+        .danger { border-color: red; background: #ffe6e6; }
+        a { color: blue; text-decoration: none; margin-right: 15px; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>🔓 SSRF Vulnerable Application</h1>
+    <p><strong>Haileegzabhier Anteneh - Security Project</strong></p>
+    
+    <div class="box">
+        <h3>📌 Quick Navigation:</h3>
+        <a href="/login">Login</a>
+        <a href="/signup">Sign Up</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/profile">Profile</a>
+        <a href="/upload">Upload Image</a>
+        <a href="/admin">Admin Panel</a>
+    </div>
+    
+    <div class="box">
+        <h3>👤 Test Accounts:</h3>
+        <ul>
+            <li><strong>john</strong> / password123</li>
+            <li><strong>admin</strong> / admin123</li>
+        </ul>
+    </div>
+    
+    <div class="box danger">
+        <h3>🎯 SSRF Attack Target:</h3>
+        <p><code>http://localhost:8080/latest/meta-data/iam/security-credentials/AdminRole</code></p>
+        <p>Goal: Extract AWS token to access admin panel</p>
+    </div>
+    
+    <div class="box">
+        <h3>📋 Vulnerable Endpoints:</h3>
+        <ul>
+            <li><strong>/upload</strong> - Upload image from URL (SSRF)</li>
+            <li><strong>/profile/update-avatar</strong> - Update avatar from URL (SSRF)</li>
+            <li><strong>/api/preview</strong> - Preview any URL (SSRF)</li>
+        </ul>
+    </div>
+</body>
+</html>

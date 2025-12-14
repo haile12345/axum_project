@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .danger { border: 2px solid red; padding: 20px; background: #ffe6e6; }
+        input { width: 80%; padding: 8px; margin: 5px 0; }
+        button { padding: 8px 15px; }
+    </style>
+</head>
+<body>
+    <h1>📤 Upload Image</h1>
+    <p><a href="/dashboard">← Back to Dashboard</a></p>
+    
+    <div style="border: 1px solid #ccc; padding: 20px; max-width: 600px;">
+        <h2>From URL (SSRF Vulnerable):</h2>
+        <form method="POST" action="/upload">
+            <p><strong>Image URL:</strong></p>
+            <input type="text" name="image_url" placeholder="http://example.com/image.jpg" required>
+            
+            <p><strong>Description:</strong></p>
+            <input type="text" name="description" placeholder="Optional description">
+            
+            <p><button type="submit">Upload from URL</button></p>
+        </form>
+        
+        <div class="danger">
+            <h3>🚨 SSRF Test URLs:</h3>
+            <ul>
+                <li><code>http://localhost:8080/latest/meta-data/</code></li>
+                <li><code>http://localhost:8080/latest/meta-data/iam/security-credentials/AdminRole</code></li>
+                <li><code>file:///etc/passwd</code> (on Linux)</li>
+                <li><code>http://169.254.169.254/latest/meta-data/</code> (real AWS)</li>
+            </ul>
+            <p><strong>Goal:</strong> Extract AWS token to access admin panel</p>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px; border: 1px solid #ccc; padding: 20px; max-width: 600px;">
+        <h2>Direct Upload:</h2>
+        <form method="POST" action="/upload/file" enctype="multipart/form-data">
+            <p><strong>Select file:</strong></p>
+            <input type="file" name="file" accept="image/*">
+            
+            <p><strong>Description:</strong></p>
+            <input type="text" name="description" placeholder="Optional description">
+            
+            <p><button type="submit">Upload File</button></p>
+        </form>
+    </div>
+</body>
+</html>

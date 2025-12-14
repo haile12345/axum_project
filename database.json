@@ -1,0 +1,35 @@
+{
+  "users": {
+    "john": {
+      "password": "password123",
+      "role": "user",
+      "balance": 1000,
+      "avatar": null,
+      "bio": "Regular user",
+      "email": "john@example.com",
+      "join_date": "2024-01-01"
+    },
+    "admin": {
+      "password": "admin123",
+      "role": "admin",
+      "balance": 5000,
+      "avatar": "https://tse1.explicit.bing.net/th/id/OIP.QSv6INslp1gjXFJyHp9irgHaGJ?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "bio": "System administrator",
+      "email": "admin@example.com",
+      "join_date": "2024-01-01"
+    },
+    "haile": {
+      "password": "haile123",
+      "role": "user",
+      "balance": 0,
+      "avatar": "http://localhost:8080",
+      "bio": "New user",
+      "email": "kal@gmail.com",
+      "join_date": "2025-12-13"
+    }
+  },
+  "files": { 
+  },
+  "logs": [
+  ]
+}
