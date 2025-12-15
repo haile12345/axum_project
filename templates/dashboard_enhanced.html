@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Indirect File Access</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .attack-box { background: #ffe6e6; padding: 15px; margin: 15px 0; border-left: 4px solid red; }
+        .file-box { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .url-example { background: #f8f9fa; padding: 10px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>📊 Dashboard - Indirect File Access</h1>
+    <p>Welcome, <strong>{{ username }}</strong>! (Role: {{ role }})</p>
+    
+    {% if aws_token %}
+    <div style="background: #d4edda; padding: 15px; margin: 15px 0;">
+        <h3>✅ AWS Token Found!</h3>
+        <p>Token: <code>{{ aws_token }}</code></p>
+        <p><a href="/admin?token={{ aws_token }}">Access Admin Panel →</a></p>
+    </div>
+    {% endif %}
+    
+    <h2>🚨 SSRF Attack Examples (Indirect System)</h2>
+    {% for attack in attack_examples %}
+    <div class="attack-box">
+        <h3>{{ attack.name }}</h3>
+        <p>{{ attack.description }}</p>
+        <div class="url-example">{{ attack.example }}</div>
+        <p><small>Hint: {{ attack.hint }}</small></p>
+    </div>
+    {% endfor %}
+    
+    <h2>📁 Your Files (Indirect Access)</h2>
+    {% if indirect_files %}
+        {% for file in indirect_files %}
+        <div class="file-box">
+            <h4>{{ file.filename }} ({{ file.size }} bytes)</h4>
+            <p><strong>GET Access:</strong> <a href="{{ '/api/access/file?fid=' + file.id + '&tok=weak' }}">Access via GET</a></p>
+            <p><strong>POST Access:</strong> 
+                <form action="/api/access/file-post" method="POST" target="_blank" style="display: inline;">
+                    <input type="hidden" name="file_id" value="{{ file.id }}">
+                    <input type="hidden" name="token" value="weak">
+                    <button type="submit">Access via POST</button>
+                </form>
+            </p>
+            <p><strong>Direct Access:</strong> <a href="/hidden/files/{{ file.id }}">Direct Download</a></p>
+            <p><small>Uploaded: {{ file.upload_time }}</small></p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No files in indirect system yet. <a href="/upload-file">Upload a file</a></p>
+    {% endif %}
+    
+    <h2>🔧 Tools</h2>
+    <ul>
+        <li><a href="/upload">Original Upload (Direct SSRF)</a></li>
+        <li><a href="/upload-file">Upload to Indirect System</a></li>
+        <li><a href="/api/encode">URL Encoding Service</a></li>
+        <li><a href="/api/preview?url=http://example.com">URL Preview</a></li>
+    </ul>
+    
+    <p><a href="/">Home</a> | <a href="/logout">Logout</a></p>
+</body>
+</html>

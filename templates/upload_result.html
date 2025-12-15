@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Upload Successful</title></head>
+<body style="margin: 40px; font-family: Arial;">
+    <h1>✅ File Uploaded Successfully</h1>
+    
+    <div style="border: 2px solid #4CAF50; padding: 20px;">
+        <h3>File: {{ file_info.filename }}</h3>
+        <p><strong>File ID:</strong> {{ file_info.file_id }}</p>
+        
+        <h4>Access URLs:</h4>
+        <ul>
+            <li><strong>GET Access:</strong> <a href="{{ file_info.get_url }}">{{ file_info.get_url }}</a></li>
+            <li><strong>POST Access:</strong> {{ file_info.post_url }}</li>
+            <li><strong>Direct Access:</strong> <a href="{{ file_info.direct_url }}">{{ file_info.direct_url }}</a></li>
+        </ul>
+    </div>
+    
+    <div style="background: #ffe6e6; padding: 15px; margin-top: 20px;">
+        <h3>🎯 Test SSRF on This File:</h3>
+        <p>Try these attacks:</p>
+        <ol>
+            <li>Replace token with URL: <code>{{ file_info.get_url|replace('tok=weak', 'tok=http://localhost:8081/') }}</code></li>
+            <li>Replace file_id with URL: <code>{{ file_info.get_url|replace('fid=' + file_info.file_id, 'fid=http://localhost:8081/') }}</code></li>
+            <li>Use POST with URL in token field</li>
+        </ol>
+    </div>
+    
+    <p><a href="/dashboard">Back to Dashboard</a> | <a href="/upload-file">Upload Another</a></p>
+</body>
+</html>
