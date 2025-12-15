@@ -108,7 +108,7 @@ def dashboard_page():
     username = session['username']
     user = db['users'].get(username, {})
     files = db['files'].get(username, [])
-    
+    print(session.get('aws_token'))
     return render_template('dashboard.html',
         username=username,
         role=user.get('role', 'user'),
@@ -162,7 +162,7 @@ def admin_page():
         safe_users = {}
         for username, user_data in db['users'].items():
             safe_users[username] = user_data.copy()
-            safe_users[username]['password'] = '***HIDDEN***'
+            safe_users[username]['password'] = '***No password ***'
         
         return render_template('admin.html',
             access_granted=True,
@@ -305,7 +305,7 @@ def update_avatar():
         db['users'][username]['avatar'] = avatar_url
         
         # Check if it's AWS metadata
-        if '169.254.169.254' in avatar_url or 'metadata' in avatar_url or '8080' in avatar_url:
+        if '169.254.169.254' in avatar_url or 'metadata' in avatar_url or '8081' in avatar_url:
             if 'Token' in response.text or 'AWS_TOKEN_EXTRACTED' in response.text:
                 session['aws_token'] = 'AWS_TOKEN_EXTRACTED'
                 add_log(f'AWS token extracted via avatar SSRF', username)
@@ -383,7 +383,7 @@ if __name__ == '__main__':
     print("  /upload        - Upload image (SSRF)")
     print("  /admin         - Admin panel")
     print("\n🎯 SSRF TARGET:")
-    print("  http://localhost:8080/latest/meta-data/iam/security-credentials/AdminRole")
+    print("  http://localhost:8081/latest/meta-data/iam/security-credentials/AdminRole")
     print("\n👤 TEST USERS: john/password123, admin/admin123")
     print("=" * 60)
     
