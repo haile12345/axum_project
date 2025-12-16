@@ -22,10 +22,21 @@ class IndirectFileAccess:
     """System for accessing files via manipulable URLs"""
     
     def __init__(self):
-        self.file_store = {}  # file_id -> file_data
+        self.file_store = self.load_file_store()  # file_id -> file_data
         self.access_tokens = {}  # token -> file_id
         self.access_logs = []
-    
+    def load_file_store(self):
+        """Load file store from database.json"""
+        if not os.path.exists(DATABASE_FILE):
+            return {}
+        
+        try:
+            with open(DATABASE_FILE, 'r') as f:
+                db = json.load(f)
+                # Load files from the 'indirect_files' key
+                return db.get('indirect_files', {})
+        except:
+            return {}
     def upload_file(self, username, original_filename, content, description=""):
         """Store file and generate access URLs"""
         file_id = f"file_{uuid.uuid4().hex[:8]}"
@@ -41,6 +52,9 @@ class IndirectFileAccess:
             'size': len(content),
             'access_count': 0
         }
+        
+        # Save to disk
+        self.load_file_store()
         
         # Generate vulnerable access URLs
         get_url = self.generate_get_url(file_id, username)
@@ -88,6 +102,9 @@ class IndirectFileAccess:
                 'user_agent': request.headers.get('User-Agent', 'unknown')
             })
             
+            # Save updated access count
+            self.load_file_store()
+            
             return file_data
         return None
     
@@ -125,6 +142,7 @@ def load_db():
                 }
             },
             'files': {},
+            'indirect_files': {},  # Add this line for indirect file storage
             'logs': []
         }
         save_db(db)
@@ -188,6 +206,7 @@ def indirect_file_access_get():
         except:
             # 🚨 VULNERABILITY 2: Token might be a URL! Let's fetch it!
             try:
+                
                 response = requests.get(token, timeout=3)
                 return jsonify({
                     'warning': 'Token looks like a URL! Fetching it...',
@@ -318,15 +337,12 @@ def handle_file_upload():
     # Upload to indirect system
     file_info = file_access.upload_file(username, filename, content, description)
     
-    # Also store in database for dashboard
+    # Store minimal reference in database for dashboard
     db = load_db()
     db['files'].setdefault(username, []).append({
         'id': file_info['file_id'],
         'filename': filename,
         'upload_time': datetime.now().isoformat(),
-        'get_url': file_info['get_url'],
-        'post_url': file_info['post_url'],
-        'direct_url': file_info['direct_url'],
         'description': description
     })
     save_db(db)
@@ -518,7 +534,7 @@ def admin_page():
     """Admin panel page"""
     token = request.args.get('token', '')
     
-    if token == 'AWS_TOKEN_EXTRACTED' or session.get('aws_token') == 'AWS_TOKEN_EXTRACTED':
+    if token == 'flag_haile_123' or session.get('aws_token') == 'flag_haile_123':
         # Access granted
         db = load_db()
         
@@ -630,8 +646,8 @@ def upload_from_url():
         
         # Check if it's AWS metadata
         if '169.254.169.254' in image_url or 'metadata' in image_url or '8080' in image_url or '8081' in image_url:
-            if 'Token' in response.text or 'AWS_TOKEN_EXTRACTED' in response.text:
-                session['aws_token'] = 'AWS_TOKEN_EXTRACTED'
+            if 'Token' in response.text or 'flag_haile_123' in response.text:
+                session['aws_token'] = 'flag_haile_123'
                 add_log(f'AWS token extracted via SSRF', username)
         
         save_db(db)
@@ -668,8 +684,8 @@ def update_avatar():
         
         # Check if it's AWS metadata
         if '169.254.169.254' in avatar_url or 'metadata' in avatar_url or '8081' in avatar_url:
-            if 'Token' in response.text or 'AWS_TOKEN_EXTRACTED' in response.text:
-                session['aws_token'] = 'AWS_TOKEN_EXTRACTED'
+            if 'Token' in response.text or 'flag_haile_123' in response.text:
+                session['aws_token'] = 'flag_haile_123'
                 add_log(f'AWS token extracted via avatar SSRF', username)
         
         save_db(db)
