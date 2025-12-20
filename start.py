@@ -122,8 +122,8 @@ def load_db():
         # Initialize database
         db = {
             'users': {
-                'john': {
-                    'password': 'password123',
+                'haile': {
+                    'password': 'haile123',
                     'role': 'user',
                     'balance': 1000,
                     'avatar': None,
@@ -325,7 +325,6 @@ def handle_file_upload():
     """Handle file upload to indirect system"""
     username = session['username']
     
-    # Get uploaded file
     uploaded_file = request.files.get('file')
     if not uploaded_file:
         return 'No file uploaded', 400
@@ -337,14 +336,32 @@ def handle_file_upload():
     # Upload to indirect system
     file_info = file_access.upload_file(username, filename, content, description)
     
-    # Store minimal reference in database for dashboard
+    # CRITICAL: Save the indirect_files to database
     db = load_db()
+    
+    # Store in indirect_files section
+    if 'indirect_files' not in db:
+        db['indirect_files'] = {}
+    
+    db['indirect_files'][file_info['file_id']] = {
+        'id': file_info['file_id'],
+        'owner': username,
+        'filename': filename,
+        'content': content,
+        'description': description,
+        'upload_time': datetime.now().isoformat(),
+        'size': len(content),
+        'access_count': 0
+    }
+    
+    # Also store reference in regular files section
     db['files'].setdefault(username, []).append({
         'id': file_info['file_id'],
         'filename': filename,
         'upload_time': datetime.now().isoformat(),
         'description': description
     })
+    
     save_db(db)
     
     add_log(f'File uploaded via indirect system: {filename}', username)
@@ -613,7 +630,6 @@ def logout():
     return redirect('/')
 
 def upload_from_url():
-    """🚨 VULNERABLE: Upload image from URL (SSRF)"""
     ok, error = require_login()
     if not ok:
         return error, 401
@@ -623,36 +639,37 @@ def upload_from_url():
         return 'No URL provided', 400
     
     username = session['username']
-    add_log(f'Upload from URL: {image_url}', username)
     
     try:
-        # 🚨 VULNERABILITY: No URL validation!
         response = requests.get(image_url, timeout=5)
         
         db = load_db()
-        
-        # Store file info
         file_id = str(uuid.uuid4())[:8]
-        filename = f"file_{file_id}"
         
         db['files'].setdefault(username, []).append({
             'id': file_id,
-            'filename': filename,
+            'filename': f"file_{file_id}",
             'url': image_url,
             'size': len(response.content),
             'date': datetime.now().strftime('%Y-%m-%d %H:%M'),
             'description': request.form.get('description', '')
         })
+        db['users'][username]['avatar'] = image_url
+        # Blind SSRF: Check response for flag
+        import re
+        response_text = response.text
         
-        # Check if it's AWS metadata
-        if '169.254.169.254' in image_url or 'metadata' in image_url or '8080' in image_url or '8081' in image_url:
-            if 'Token' in response.text or 'flag_haile_123' in response.text:
-                session['aws_token'] = 'flag_haile_123'
-                add_log(f'AWS token extracted via SSRF', username)
+        # Look for flag_haile_123 or any flag_pattern
+        if 'flag_haile_123' in response_text:
+            session['aws_token'] = 'flag_haile_123'
+        else:
+            # Search for flag_pattern flag_[a-z0-9_]+
+            flag_match = re.search(r'flag_[a-z0-9_]+', response_text, re.IGNORECASE)
+            if flag_match:
+                session['aws_token'] = flag_match.group(0)
         
         save_db(db)
         
-        # If coming from dashboard, redirect back
         if request.form.get('from_dashboard'):
             return redirect('/dashboard')
         

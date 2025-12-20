@@ -2,8 +2,6 @@ from flask import Flask, jsonify, request, send_file
 import os
 import json
 import paramiko
-import boto3
-from botocore.exceptions import ClientError
 import requests
 import socket
 
@@ -156,7 +154,7 @@ def admin_role():
     DISCOVERED_CREDS["aws"].append(creds)
     
     # Try to auto-use these credentials
-    auto_use_aws_creds(creds)
+    
     
     return jsonify(creds)
 
@@ -166,14 +164,14 @@ def read_only_role():
         "Code": "Success",
         "AccessKeyId": "AKIAI44QH8DHBEXAMPLE",
         "SecretAccessKey": "je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY",
-        "Token": "AWS_TOKEN_READONLY",  # WRONG TOKEN
+        "Token": "flag{am_fake_flag}",  # WRONG TOKEN
         "Expiration": "2024-12-31T23:59:59Z",
         "Permissions": "ReadOnlyAccess",
         "note": "This token won't work for file access"
     }
     
     DISCOVERED_CREDS["aws"].append(creds)
-    auto_use_aws_creds(creds)
+ 
     
     return jsonify(creds)
 
@@ -183,14 +181,14 @@ def power_user_role():
         "Code": "Success",
         "AccessKeyId": "AKIAEXAMPLE123456",
         "SecretAccessKey": "bPxRfiCYEXAMPLEKEY/je7MtGbClwBF/2Zp9Utk",
-        "Token": "AWS_TOKEN_POWERUSER",  # WRONG TOKEN
+        "Token": "flag{am_fake_flag}",  # WRONG TOKEN
         "Expiration": "2024-12-31T23:59:59Z",
         "Permissions": "PowerUserAccess",
         "note": "This token won't work for file access"
     }
     
     DISCOVERED_CREDS["aws"].append(creds)
-    auto_use_aws_creds(creds)
+   
     
     return jsonify(creds)
 
@@ -346,48 +344,6 @@ def search_files():
         return jsonify({"error": str(e)}), 500
 
 # ==================== AUTO-USAGE FUNCTIONS ====================
-
-def auto_use_aws_creds(credentials):
-    """Automatically try to use discovered AWS credentials"""
-    try:
-        print(f"\n🔐 ATTEMPTING TO USE DISCOVERED AWS CREDENTIALS:")
-        print(f"   Access Key: {credentials['AccessKeyId'][:20]}...")
-        print(f"   Token: {credentials.get('Token', 'No token')}")
-        
-        # Check if this is the flag token
-        if credentials.get('Token') == SECRET_TOKEN:
-            print(f"   🚩 FLAG TOKEN FOUND! Use it at: /files?token={SECRET_TOKEN}")
-        
-        # Try to create AWS session
-        session = boto3.Session(
-            aws_access_key_id=credentials['AccessKeyId'],
-            aws_secret_access_key=credentials['SecretAccessKey'],
-            aws_session_token=credentials.get('Token')
-        )
-        
-        # Try to list S3 buckets
-        s3 = session.client('s3')
-        buckets = s3.list_buckets()
-        print(f"   ✅ SUCCESS! Access to {len(buckets['Buckets'])} S3 buckets")
-        
-        # Try EC2
-        ec2 = session.client('ec2')
-        instances = ec2.describe_instances()
-        print(f"   ✅ SUCCESS! Access to EC2 instances")
-        
-        # Try to get more secrets from SSM Parameter Store
-        try:
-            ssm = session.client('ssm')
-            params = ssm.describe_parameters(MaxResults=10)
-            print(f"   ✅ SUCCESS! Access to SSM Parameter Store")
-        except:
-            pass
-        
-        return True
-        
-    except Exception as e:
-        print(f"   ❌ Failed to use AWS credentials: {str(e)[:100]}")
-        return False
 
 def auto_try_ssh(host, username, password=None, private_key=None):
     """Automatically try SSH with discovered credentials"""
